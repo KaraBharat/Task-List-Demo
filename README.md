@@ -11,9 +11,9 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - TailwindCSS
 - HonoJs
 - Zod
+- DrizzleORM
 - Neon
 - PostgreSQL
-- Drizzle
 
 - ⚠️ No authentication and user management added yet
 
