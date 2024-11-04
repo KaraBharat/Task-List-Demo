@@ -4,15 +4,16 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 - Next.js
 - React
+- Tanstack Query
+- Zustand
+- Shadcn UI
+- TypeScript
+- TailwindCSS
 - HonoJs
 - Zod
 - Neon
 - PostgreSQL
 - Drizzle
-- Zustand
-- Shadcn UI
-- TypeScript
-- TailwindCSS
 
 - ⚠️ No authentication and user management added yet
 
