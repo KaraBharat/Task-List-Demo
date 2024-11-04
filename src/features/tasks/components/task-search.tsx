@@ -58,7 +58,6 @@ export const TaskSearch: React.FC = () => {
 
       {/* Search Input */}
       <Input
-        type="search"
         name="task-search"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
