@@ -14,7 +14,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - TypeScript
 - TailwindCSS
 
-- No authentication and user management added yet
+- ⚠️ No authentication and user management added yet
 
 ## Getting Started
 
