@@ -1,17 +1,81 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Tools used to build this project
+
+- Next.js
+- React
+- HonoJs
+- Zod
+- Neon
+- PostgreSQL
+- Drizzle
+- Zustand
+- Shadcn UI
+- TypeScript
+- TailwindCSS
+
+- No authentication and user management added yet
+
 ## Getting Started
 
 First, run the development server:
 
+## Create account and database on Neon
+
+Go to [Neon](https://neon.tech/) and create an account.
+
+Create a new project and select the free tier.
+
+## Install Package
+
+```bash
+npm install
+```
+
+## Set database connection URL
+
+Create a `.env` file and set the database connection URL.
+
+```bash
+DATABASE_URL='postgresql://xxxxxxx-xxxxxx:xxxxxxx-xxxxxx@xxxxxxx-xxxxxx.db.neon.tech/xxxxxxx-xxxxxx?sslmode=require'
+```
+
+## Generate Database
+
+```bash
+npm run db:generate
+```
+
+## Migrate Database
+
+```bash
+npm run db:migrate
+```
+
+## Run Studio
+
+```bash
+npm run db:studio
+```
+
+## Run Server
+
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+
+## Database sample data script path
+
+```bash
+src/database/Sample-Data-Script/
+```
+
+## Run sample data script using Neon SQL Editor
+
+Go to [Neon Studio](https://studio.neon.tech/) and run the sample data script.
+
+```sql
+\i src/database/Sample-Data-Script/sample-data-script.sql
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
