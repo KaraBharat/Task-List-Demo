@@ -23,12 +23,14 @@ import { ChevronsUpDown, Loader2 } from "lucide-react";
  * @property {React.ReactNode} selectedItem - The currently selected item to display
  * @property {string} [placeholder] - Optional placeholder text for the search input
  * @property {boolean} [isLoading] - Optional flag to indicate if the ComboBox is in a loading state
+ * @property {boolean} [disabledSearch] - Optional flag to indicate if the search input should be disabled
  */
 type ComboBoxProps = {
   children: React.ReactNode;
   selectedItem: React.ReactNode;
   placeholder?: string;
   isLoading?: boolean;
+  disabledSearch?: boolean;
 };
 
 /**
@@ -41,6 +43,7 @@ export const ComboBox: React.FC<ComboBoxProps> = ({
   selectedItem,
   placeholder = "Search...",
   isLoading = false,
+  disabledSearch = false,
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -74,7 +77,7 @@ export const ComboBox: React.FC<ComboBoxProps> = ({
       {/* Popover content */}
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
         <Command>
-          <CommandInput placeholder={placeholder} />
+          {!disabledSearch && <CommandInput placeholder={placeholder} />}
           <CommandList>
             <CommandEmpty>No items found.</CommandEmpty>
             <CommandGroup>{children}</CommandGroup>

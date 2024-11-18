@@ -17,7 +17,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 // Hooks and queries
-import { useDeleteTask } from "../queries/task.queries";
+import {
+  useDeleteTask,
+  useDeleteTaskWithInfinite,
+} from "../queries/task.queries";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useEditTask } from "../hooks/use-edit-task";
 
@@ -42,7 +45,10 @@ interface Props {
 const TaskActions: React.FC<Props> = ({ taskId, onDelete }) => {
   // Hooks initialization
   const { onOpen } = useEditTask();
-  const { mutate: deleteTask } = useDeleteTask();
+  // const { mutate: deleteTask } = useDeleteTask();
+  // infinite scroll option:
+  const { mutate: deleteTaskWithInfinite } = useDeleteTaskWithInfinite();
+
   const [ConfirmationDialog, confirm] = useConfirm({
     title: "Are you sure?",
     message: "The task will get deleted permanently.",
@@ -55,7 +61,9 @@ const TaskActions: React.FC<Props> = ({ taskId, onDelete }) => {
   const handleDelete = async () => {
     const confirmed = await confirm();
     if (confirmed) {
-      deleteTask(taskId);
+      // deleteTask(taskId);
+      // infinite scroll option:
+      deleteTaskWithInfinite(taskId);
       onDelete?.();
     }
   };
@@ -84,7 +92,9 @@ const TaskActions: React.FC<Props> = ({ taskId, onDelete }) => {
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
               <Link
-                href={`/tasks/${taskId}`}
+                //href={`/tasks/${taskId}`}
+                // infinite scroll option:
+                href={`/tasks-infinite/${taskId}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex w-full items-center gap-2"

@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 
 // Constants
-const PAGE_SIZE_OPTIONS = [15, 25, 50, 100] as const;
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
 
 // Types
 interface TablePaginationProps {

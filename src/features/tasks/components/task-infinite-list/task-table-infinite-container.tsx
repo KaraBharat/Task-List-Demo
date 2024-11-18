@@ -13,17 +13,18 @@ import {
 // Internal dependencies - UI Components
 import { Button } from "@/components/ui/button";
 import { ColumnSelection } from "@/components/column-selection";
+import TaskTableInfinite from "./task-table-infinite";
 
 // Internal dependencies - Features
-import { TableInstance } from "./task-table-wrapper";
-import { TablePagination } from "./task-pagination";
-import { TaskSearch } from "./task-search";
-import { TaskTable } from "./task-table";
-import TaskFilter from "./task-filter";
+import { TaskSearch } from "../task-search";
+import TaskFilter from "../task-filter";
 
 // Internal dependencies - Hooks & Utils
-import { useNewTask } from "../hooks/use-new-task";
-import { Task, useBulkDeleteTask } from "../queries/task.queries";
+import { useNewTask } from "../../hooks/use-new-task";
+import {
+  Task,
+  useBulkDeleteTaskWithInfinite,
+} from "../../queries/task.queries";
 import { useConfirm } from "@/hooks/use-confirm";
 import { cn } from "@/lib/utils";
 import {
@@ -31,6 +32,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import TaskTableInfiniteWrapper from "./task-table-infinite-wrapper";
+import TaskTableInfiniteSort from "./task-table-infinite-sort";
 
 // Types
 interface TaskTableContainerProps {
@@ -44,14 +47,14 @@ interface TaskTableContainerProps {
  * Main container component for the task management interface.
  * Handles task operations, filtering, and display management.
  */
-export const TaskTableContainer: React.FC<TaskTableContainerProps> = ({
+export const TaskTableInfiniteContainer: React.FC<TaskTableContainerProps> = ({
   onSelectTask,
   selectedTask,
   visibleColumns,
 }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { onOpen } = useNewTask();
-  const { mutate: deleteTasks } = useBulkDeleteTask();
+  const { mutate: deleteTasksWithInfinite } = useBulkDeleteTaskWithInfinite();
   const [ConfirmationDialog, confirm] = useConfirm({
     title: "Are you sure?",
     message: "The selected tasks will get deleted permanently.",
@@ -59,8 +62,19 @@ export const TaskTableContainer: React.FC<TaskTableContainerProps> = ({
 
   return (
     <div className="py-2" role="region" aria-label="Task management interface">
-      <TableInstance visibleColumns={visibleColumns}>
-        {(table, totalCount, isLoading, error) => {
+      <TaskTableInfiniteWrapper
+        visibleColumns={visibleColumns}
+        selectedTask={selectedTask}
+      >
+        {(
+          table,
+          totalCount,
+          isLoading,
+          error,
+          fetchNextPage,
+          hasNextPage,
+          isFetchingNextPage,
+        ) => {
           const selectedTasks = table
             .getRowModel()
             .rows.filter((row) => row.getIsSelected());
@@ -78,7 +92,7 @@ export const TaskTableContainer: React.FC<TaskTableContainerProps> = ({
                     table,
                     selectedTasks,
                     confirm,
-                    deleteTasks,
+                    deleteTasksWithInfinite,
                   )}
                   table={table}
                 />
@@ -89,21 +103,35 @@ export const TaskTableContainer: React.FC<TaskTableContainerProps> = ({
                   selectedTask={selectedTask}
                 />
               </div>
-              
-              {error ? (
-                <ErrorMessage />
-              ) : (
-                <TableContent
-                  table={table}
-                  totalCount={totalCount}
-                  isLoading={isLoading}
-                  onSelectTask={onSelectTask}
-                />
+              <div
+                className={cn(
+                  "h-[calc(100vh-12rem)] overflow-y-auto",
+                  selectedTask ? "h-[calc(100vh-10rem)]" : "",
+                )}
+              >
+                {error ? (
+                  <ErrorMessage />
+                ) : (
+                  <TableContent
+                    table={table}
+                    totalCount={totalCount}
+                    isLoading={isLoading}
+                    onSelectTask={onSelectTask}
+                    fetchNextPage={fetchNextPage}
+                    hasNextPage={hasNextPage}
+                    isFetchingNextPage={isFetchingNextPage}
+                  />
+                )}
+              </div>
+              {!isLoading && (
+                <p className="px-2 py-4 text-sm text-gray-500">
+                  Total Tasks: {totalCount}
+                </p>
               )}
             </>
           );
         }}
-      </TableInstance>
+      </TaskTableInfiniteWrapper>
       <ConfirmationDialog />
     </div>
   );
@@ -168,6 +196,9 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
         </Tooltip>
       </div>
       <div>
+        <TaskTableInfiniteSort table={table} />
+      </div>
+      <div>
         <Tooltip>
           <TooltipTrigger asChild>
             <ColumnSelection table={table} />
@@ -196,7 +227,7 @@ const FilterSection: React.FC<{
   setIsFilterOpen: (value: boolean) => void;
   selectedTask: Task | null;
 }> = ({ isFilterOpen, setIsFilterOpen, selectedTask }) => (
-  <div className="mb-4 flex w-full items-center">
+  <div className="flex w-full items-center">
     <TaskFilter
       isFilterOpen={isFilterOpen}
       setIsFilterOpen={setIsFilterOpen}
@@ -214,16 +245,29 @@ const TableContent: React.FC<{
   totalCount: number;
   isLoading: boolean;
   onSelectTask: (task: Task) => void;
-}> = ({ table, totalCount, isLoading, onSelectTask }) => (
-  <>
-    <TaskTable
+  fetchNextPage: () => void;
+  hasNextPage: boolean | undefined;
+  isFetchingNextPage: boolean;
+}> = ({
+  table,
+  totalCount,
+  isLoading,
+  onSelectTask,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+}) => {
+  return (
+    <TaskTableInfinite
       table={table}
       isLoading={isLoading}
       onSelectTask={onSelectTask}
+      fetchNextPage={fetchNextPage}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
     />
-    <TablePagination table={table} totalResults={totalCount} />
-  </>
-);
+  );
+};
 
 // Utility Components
 const DeleteButton: React.FC<{
@@ -306,4 +350,4 @@ const createDeleteTasksHandler =
     }
   };
 
-export default TaskTableContainer;
+export default TaskTableInfiniteContainer;

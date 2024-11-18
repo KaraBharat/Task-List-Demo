@@ -47,8 +47,7 @@ const app = new Hono()
             "status",
             "assigneeName",
           ])
-          .optional()
-          .default("createdAt"),
+          .optional(),
         order: z.enum(["asc", "desc"]).optional().default("desc"),
         status: z.string().optional(),
         type: z.string().optional(),
@@ -212,17 +211,23 @@ const app = new Hono()
               order === "desc"
                 ? sql`assigneeUser.name desc`
                 : sql`assigneeUser.name asc`,
+              sql`COALESCE(tasks.updated_at, tasks.created_at) DESC`, // Fallback to created_at if updated_at is null
             ) as typeof query;
           } else {
             const sortColumn = tasks[sort as keyof typeof tasks] as AnyColumn;
             query = query.orderBy(
               order === "desc" ? desc(sortColumn) : asc(sortColumn),
+              sql`COALESCE(tasks.updated_at, tasks.created_at) DESC`, // Fallback to created_at if updated_at is null
             ) as typeof query;
           }
         } else {
           // Default sorting if not specified
-          query = query.orderBy(desc(tasks.createdAt)) as typeof query;
+          query = query.orderBy(
+            sql`COALESCE(tasks.updated_at, tasks.created_at) DESC`,
+          ) as typeof query;
         }
+
+        // console.log(query.toSQL());
 
         // Apply pagination
         query = query.limit(limit).offset(offset) as typeof query;
@@ -396,6 +401,7 @@ const app = new Hono()
           storyPoints: taskData.storyPoints,
           timeEstimate: taskData.timeEstimate,
           timeSpent: taskData.timeSpent,
+          updatedAt: new Date(),
         })
         .where(eq(tasks.id, id))
         .returning();

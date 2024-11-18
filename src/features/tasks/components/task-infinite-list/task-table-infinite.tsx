@@ -2,34 +2,25 @@
 
 // External dependencies
 import React from "react";
-import {
-  ColumnDef,
-  flexRender,
-  Table as TableType,
-} from "@tanstack/react-table";
-import { ArrowDownNarrowWideIcon, ArrowUpWideNarrowIcon } from "lucide-react";
+import { ColumnDef, Table as TableType } from "@tanstack/react-table";
 
 // Internal dependencies - UI Components
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Internal dependencies - Utils & Constants
 import { cn } from "@/lib/utils";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
-import { Task } from "../queries/task.queries";
+import { Task } from "../../queries/task.queries";
 
 // Types
-interface TaskTableProps {
+interface TaskTableInfiniteProps {
   table: TableType<Task>;
   isLoading: boolean;
   onSelectTask: (task: Task) => void;
+  fetchNextPage: () => void;
+  hasNextPage: boolean | undefined;
+  isFetchingNextPage: boolean;
 }
 
 /**
@@ -40,82 +31,51 @@ interface TaskTableProps {
  * @param {boolean} isLoading - Loading state of the table
  * @param {Function} onSelectTask - Callback for task selection
  */
-export const TaskTable: React.FC<TaskTableProps> = ({
+export const TaskTableInfinite: React.FC<TaskTableInfiniteProps> = ({
   table,
   isLoading,
   onSelectTask,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
 }) => {
-  return (
-    <div
-      className="relative h-[calc(100vh-18rem)] overflow-y-auto md:h-[calc(100vh-14rem)]"
-      role="region"
-      aria-label="Tasks table"
-    >
-      <Table className="min-w-full">
-        {/* Table Header Section */}
-        <TableHeader className="bg-gray-200">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} role="row">
-              {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  className="sticky top-0 z-10 border border-stone-300 px-4 py-2 text-left text-sm font-medium text-gray-600 hover:bg-gray-200"
-                  role="columnheader"
-                >
-                  {!header.isPlaceholder && (
-                    <div className="flex items-center">
-                      {renderHeaderContent(header)}
-                    </div>
-                  )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
+  const loadMoreRef = React.useCallback(
+    (node: any) => {
+      if (!node) return;
 
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        },
+        { threshold: 0.5 },
+      );
+
+      observer.observe(node);
+
+      return () => observer.disconnect();
+    },
+    [fetchNextPage, hasNextPage, isFetchingNextPage],
+  );
+
+  return (
+    <div className="relative" role="region" aria-label="Tasks table">
+      <Table className="min-w-full">
         {/* Table Body Section */}
-        <TableBody className="overflow-y-auto">
+        <TableBody>
           {renderTableContent(table, isLoading, onSelectTask)}
+          {isFetchingNextPage && (
+            <TaskTableSkeleton
+              rows={2}
+              columns={table.getAllColumns().length}
+            />
+          )}
         </TableBody>
       </Table>
+      <div ref={loadMoreRef} />
     </div>
   );
-};
-
-// Helper Components and Functions
-/**
- * Renders the header content with sorting functionality
- */
-const renderHeaderContent = (header: any) => {
-  if (header.column.getCanSort()) {
-    return (
-      <button
-        className="flex cursor-pointer items-center gap-2"
-        onClick={header.column.getToggleSortingHandler()}
-        aria-label={`Sort by ${header.column.columnDef.header}`}
-      >
-        {renderSortIcon(header.column.getIsSorted())}
-        {flexRender(header.column.columnDef.header, header.getContext())}
-      </button>
-    );
-  }
-
-  return (
-    <div className="flex w-full items-center justify-center pr-4">
-      {flexRender(header.column.columnDef.header, header.getContext())}
-    </div>
-  );
-};
-
-/**
- * Renders the appropriate sort icon based on sort direction
- */
-const renderSortIcon = (sortDirection: false | "asc" | "desc") => {
-  if (sortDirection === "asc")
-    return <ArrowDownNarrowWideIcon className="size-4" aria-hidden="true" />;
-  if (sortDirection === "desc")
-    return <ArrowUpWideNarrowIcon className="size-4" aria-hidden="true" />;
-  return null;
 };
 
 /**
@@ -130,7 +90,7 @@ const renderTableContent = (
     return (
       <TaskTableSkeleton
         rows={DEFAULT_PAGE_SIZE}
-        columns={table.getAllColumns().map((col) => col.columnDef)}
+        columns={table.getAllColumns().length}
       />
     );
   }
@@ -175,7 +135,7 @@ const EmptyTableMessage: React.FC<{ colSpan: number }> = ({ colSpan }) => (
 // Types and Implementation for TaskTableSkeleton
 interface TaskTableSkeletonProps {
   rows: number;
-  columns: ColumnDef<Task>[];
+  columns: number;
 }
 
 /**
@@ -189,19 +149,16 @@ const TaskTableSkeleton: React.FC<TaskTableSkeletonProps> = ({
   <>
     {Array.from({ length: rows }).map((_, rowIndex) => (
       <TableRow key={rowIndex} role="row">
-        {columns.map((column, columnIndex) => (
-          <TableCell
-            key={columnIndex}
-            className="border border-stone-300 px-4 py-2 text-sm text-gray-700"
-            style={{
-              minWidth: column.minSize ? `${column.minSize}px` : undefined,
-              width: column.minSize ? `${column.minSize}px` : undefined,
-            }}
-            role="cell"
-          >
-            <Skeleton className="h-8 w-full" />
-          </TableCell>
-        ))}
+        <TableCell colSpan={columns}>
+          <div className="flex w-full items-center justify-start gap-2">
+            <Skeleton className="h-4 w-[50%] rounded-md" />
+            <Skeleton className="h-4 w-[10%] rounded-md" />
+            <Skeleton className="h-4 w-[10%] rounded-md" />
+            <Skeleton className="h-4 w-[10%] rounded-md" />
+            <Skeleton className="h-4 w-[5%] rounded-md" />
+            <Skeleton className="h-4 w-[5%] rounded-md" />
+          </div>
+        </TableCell>
       </TableRow>
     ))}
   </>
@@ -211,11 +168,7 @@ const TaskTableSkeleton: React.FC<TaskTableSkeletonProps> = ({
 const getRowClassName = (row: any, index: number) =>
   cn(
     "hover:bg-stone-100",
-    row.getIsSelected()
-      ? "bg-blue-100 hover:bg-blue-200"
-      : index % 2 === 0
-        ? "bg-gray-50"
-        : "bg-white",
+    row.getIsSelected() && "bg-blue-100 hover:bg-blue-200",
     row.original.optimisticStatus === "creating" ||
       row.original.optimisticStatus === "updating"
       ? "animate-pulse bg-green-100 hover:bg-green-100"
@@ -227,7 +180,7 @@ const getRowClassName = (row: any, index: number) =>
 
 const getCellClassName = (cell: any) =>
   cn(
-    "border border-stone-300 px-4 py-2 text-sm text-gray-700",
+    "px-4 py-[4px] text-sm text-gray-700",
     cell.column.id !== "title" ? "cursor-default" : "cursor-pointer",
   );
 
@@ -251,4 +204,4 @@ const handleCellClick = (
   onSelectTask(row.original);
 };
 
-export default TaskTable;
+export default TaskTableInfinite;

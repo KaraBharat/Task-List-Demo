@@ -24,7 +24,12 @@ import type { Task } from "../../queries/task.queries";
 
 // Internal dependencies - Hooks & Store
 import { useAuthStore } from "@/stores/auth-store";
-import { useCreateTask, useUpdateTask } from "../../queries/task.queries";
+import {
+  useCreateTask,
+  useCreateTaskWithInfinite,
+  useUpdateTask,
+  useUpdateTaskWithInfinite,
+} from "../../queries/task.queries";
 import { useNewTask } from "../../hooks/use-new-task";
 import { useEditTask } from "../../hooks/use-edit-task";
 import {
@@ -52,8 +57,13 @@ function TaskForm({ task }: TaskFormProps) {
   const { data: userProfiles, isLoading: userProfilesLoading } =
     useUserProfiles();
   const { userProfile } = useAuthStore();
-  const { mutate: createTask } = useCreateTask();
-  const { mutate: updateTask } = useUpdateTask();
+
+  // const { mutate: createTask } = useCreateTask();
+  // const { mutate: updateTask } = useUpdateTask();
+
+  // infinite scroll options:
+  const { mutate: createTaskWithInfinite } = useCreateTaskWithInfinite();
+  const { mutate: updateTaskWithInfinite } = useUpdateTaskWithInfinite();
 
   // Initialize form with default values
   const form = useForm<TaskFormData>({
@@ -83,9 +93,17 @@ function TaskForm({ task }: TaskFormProps) {
         labels: data.type?.toString() || "",
       };
       if (task) {
-        updateTask({ id: task.id, data: formTask });
+        // updateTask({ id: task.id, data: formTask });
+        // infinite scroll option:
+        updateTaskWithInfinite({ id: task.id, data: formTask });
       } else {
-        createTask({
+        // createTask({
+        //   ...formTask,
+        //   type: formTask.type || "task",
+        //   reporterId: userProfile?.id,
+        // });
+        // infinite scroll option:
+        createTaskWithInfinite({
           ...formTask,
           type: formTask.type || "task",
           reporterId: userProfile?.id,
