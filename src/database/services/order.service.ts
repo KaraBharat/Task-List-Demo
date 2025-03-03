@@ -25,9 +25,12 @@ export const getOrders = async (page: number = 1, pageSize: number = 10) => {
       id: orders.id,
       orderNo: orders.orderNo,
       orderDate: orders.orderDate,
-      customerName: customers.customerName,
-      customerEmail: customers.email,
-      customerPhone: customers.phone,
+      customer: {
+        id: customers.id,
+        customerName: customers.customerName,
+        email: customers.email,
+        phone: customers.phone,
+      },
       totalAmount: orders.totalAmount,
       createdAt: orders.createdAt,
       updatedAt: orders.updatedAt,
@@ -35,7 +38,7 @@ export const getOrders = async (page: number = 1, pageSize: number = 10) => {
     .from(orders)
     .innerJoin(paginatedOrders, eq(orders.id, paginatedOrders.id))
     .innerJoin(customers, eq(customers.id, orders.customerId))
-    .orderBy(desc(orders.orderNo)); // Ensuring consistent ordering
+    .orderBy(desc(orders.orderNo));
 
   return orderList;
 };
@@ -53,7 +56,7 @@ export const getOrder = async (orderId: string) => {
         email: customers.email,
         phone: customers.phone,
       },
-      lineItems: sql<OrderDetail>`array_agg(json_build_object(
+      lineItems: sql<OrderDetail[]>`json_agg(json_build_object(
         'id', ${orderDetails.id},
         'productId', ${orderDetails.productId},
         'productName', ${products.productName},
@@ -61,20 +64,14 @@ export const getOrder = async (orderId: string) => {
         'quantity', ${orderDetails.quantity},
         'price', ${orderDetails.price},
         'amount', ${orderDetails.amount}
-      ))`,
+      ))::jsonb`,
     })
     .from(orders)
     .innerJoin(customers, eq(customers.id, orders.customerId))
     .innerJoin(orderDetails, eq(orders.id, orderDetails.orderId))
     .innerJoin(products, eq(products.id, orderDetails.productId))
     .where(eq(orders.id, orderId))
-    .groupBy(
-      orders.id,
-      customers.id,
-      customers.customerName,
-      customers.email,
-      customers.phone,
-    );
+    .groupBy(orders.id, customers.id);
 
   return order;
 };
