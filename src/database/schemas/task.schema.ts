@@ -88,7 +88,6 @@ export const tasksRelations = relations(tasks, ({ one, many }) => ({
     references: [userProfiles.id],
     relationName: "reporter",
   }),
-  subtasks: many(tasks, { relationName: "subtasks" }),
   comments: many(taskComments),
 }));
 

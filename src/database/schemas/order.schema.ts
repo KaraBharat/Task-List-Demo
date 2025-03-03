@@ -66,24 +66,38 @@ export const customers = pgTable("customers", {
   deletedAt: timestamp("deleted_at"),
 });
 
-// Relations for Orders table
-export const ordersRelations = relations(orders, ({ one, many }) => ({
-  orderDetails: many(orderDetails),
-  customer: one(customers),
-}));
-
-// Relations for Order Details table
-export const orderDetailsRelations = relations(orderDetails, ({ one }) => ({
-  order: one(orders),
-  product: one(products),
-}));
-
-// Relations for Products table
-export const productsRelations = relations(products, ({ many }) => ({
-  orderDetails: many(orderDetails),
-}));
-
-// Relations for Customers table
 export const customersRelations = relations(customers, ({ many }) => ({
-  orders: many(orders),
+  orders: many(orders, {
+    relationName: "customerOrders",
+  }),
+}));
+
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+  orderDetails: many(orderDetails, {
+    relationName: "orderToDetails",
+  }),
+  customer: one(customers, {
+    relationName: "customerOrders",
+    fields: [orders.customerId],
+    references: [customers.id],
+  }),
+}));
+
+export const productsRelations = relations(products, ({ many }) => ({
+  orderDetails: many(orderDetails, {
+    relationName: "productOrderDetails",
+  }),
+}));
+
+export const orderDetailsRelations = relations(orderDetails, ({ one }) => ({
+  order: one(orders, {
+    relationName: "orderToDetails",
+    fields: [orderDetails.orderId],
+    references: [orders.id],
+  }),
+  product: one(products, {
+    relationName: "productOrderDetails",
+    fields: [orderDetails.productId],
+    references: [products.id],
+  }),
 }));
