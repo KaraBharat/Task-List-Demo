@@ -15,7 +15,7 @@ import {
   tasks,
   insertTaskSchema,
   updateTaskSchema,
-} from "../../../database/schema";
+} from "../../../database/schemas/task.schema";
 import { z } from "zod";
 import { db } from "@/database/drizzle";
 

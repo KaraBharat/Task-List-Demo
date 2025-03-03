@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { taskPriorities, taskStatuses, taskTypes } from "@/database/schema";
+import { taskPriorities, taskStatuses, taskTypes } from "@/database/schemas/task.schema";
 
 export const taskSchema = z.object({
   title: z.string().min(1, "Title is required"),

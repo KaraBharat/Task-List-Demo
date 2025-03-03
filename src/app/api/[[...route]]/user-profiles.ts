@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { db } from "@/database/drizzle";
-import { userProfiles } from "../../../database/schema";
+import { userProfiles } from "../../../database/schemas/task.schema";
 import { eq } from "drizzle-orm";
 
 /**

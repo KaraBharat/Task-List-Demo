@@ -15,7 +15,7 @@ import {
   insertTaskSchema,
   updateTaskSchema,
   taskSchema,
-} from "@/database/schema";
+} from "@/database/schemas/task.schema";
 import { TaskFilters } from "../types";
 import { useTaskFiltersStore } from "@/stores/task-filters-store";
 import { toast } from "@/hooks/use-toast";

@@ -5,7 +5,7 @@ import {
   insertTaskCommentSchema,
   updateTaskCommentSchema,
   taskCommentSchema,
-} from "@/database/schema";
+} from "@/database/schemas/task.schema";
 import { useAuthStore } from "@/stores/auth-store";
 import { v4 as uuidv4 } from "uuid";
 

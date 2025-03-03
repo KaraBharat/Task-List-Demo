@@ -8,7 +8,7 @@ import {
   updateTaskCommentSchema,
   deleteTaskCommentSchema,
   userProfiles,
-} from "../../../database/schema";
+} from "../../../database/schemas/task.schema";
 
 /**
  * Task Comments API

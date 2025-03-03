@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { client } from "@/lib/hono";
-import { userProfileSchema } from "@/database/schema";
+import { userProfileSchema } from "@/database/schemas/task.schema";
 
 /**
  * Query key factory for user-related queries
