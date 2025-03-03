@@ -1,4 +1,4 @@
-import { eq, desc, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { db } from "@/database/drizzle";
 import {
   orders,
@@ -7,6 +7,44 @@ import {
   products,
   OrderDetail,
 } from "@/database/schemas/order.schema";
+
+// ✅ Fetch an order with customer details & nested line items using Drizzle ORM
+export const getOrder = async (orderId: string) => {
+  const [order] = await db
+    .select({
+      id: orders.id,
+      orderNo: orders.orderNo,
+      orderDate: orders.orderDate,
+      totalAmount: orders.totalAmount,
+
+      // 👤 Fetching customer details as a nested object
+      customer: {
+        id: customers.id,
+        customerName: customers.customerName,
+        email: customers.email,
+        phone: customers.phone,
+      },
+
+      // 📦 Aggregating line items as an array of JSON objects
+      lineItems: sql<OrderDetail[]>`json_agg(json_build_object(
+        'id', ${orderDetails.id},
+        'productId', ${orderDetails.productId},
+        'productName', ${products.productName},
+        'productCode', ${products.productCode},
+        'quantity', ${orderDetails.quantity},
+        'price', ${orderDetails.price},
+        'amount', ${orderDetails.amount}
+      ))::jsonb`, // 🔥 Converts JSON array into PostgreSQL `jsonb` type for structured data
+    })
+    .from(orders)
+    .innerJoin(customers, eq(customers.id, orders.customerId))
+    .innerJoin(orderDetails, eq(orders.id, orderDetails.orderId))
+    .innerJoin(products, eq(products.id, orderDetails.productId))
+    .where(eq(orders.id, orderId))
+    .groupBy(orders.id, customers.id);
+
+  return order; // ✅ Returns a structured order with nested customer & line items
+};
 
 export const getOrders = async (page: number = 1, pageSize: number = 10) => {
   // Fetch paginated order IDs first for performance optimization
@@ -41,37 +79,4 @@ export const getOrders = async (page: number = 1, pageSize: number = 10) => {
     .orderBy(desc(orders.orderNo));
 
   return orderList;
-};
-
-export const getOrder = async (orderId: string) => {
-  const [order] = await db
-    .select({
-      id: orders.id,
-      orderNo: orders.orderNo,
-      orderDate: orders.orderDate,
-      totalAmount: orders.totalAmount,
-      customer: {
-        id: customers.id,
-        customerName: customers.customerName,
-        email: customers.email,
-        phone: customers.phone,
-      },
-      lineItems: sql<OrderDetail[]>`json_agg(json_build_object(
-        'id', ${orderDetails.id},
-        'productId', ${orderDetails.productId},
-        'productName', ${products.productName},
-        'productCode', ${products.productCode},
-        'quantity', ${orderDetails.quantity},
-        'price', ${orderDetails.price},
-        'amount', ${orderDetails.amount}
-      ))::jsonb`,
-    })
-    .from(orders)
-    .innerJoin(customers, eq(customers.id, orders.customerId))
-    .innerJoin(orderDetails, eq(orders.id, orderDetails.orderId))
-    .innerJoin(products, eq(products.id, orderDetails.productId))
-    .where(eq(orders.id, orderId))
-    .groupBy(orders.id, customers.id);
-
-  return order;
 };
