@@ -64,9 +64,9 @@ export const getOrder = async (orderId: string) => {
       ))`,
     })
     .from(orders)
-    .leftJoin(customers, eq(customers.id, orders.customerId))
-    .leftJoin(orderDetails, eq(orders.id, orderDetails.orderId))
-    .leftJoin(products, eq(products.id, orderDetails.productId))
+    .innerJoin(customers, eq(customers.id, orders.customerId))
+    .innerJoin(orderDetails, eq(orders.id, orderDetails.orderId))
+    .innerJoin(products, eq(products.id, orderDetails.productId))
     .where(eq(orders.id, orderId))
     .groupBy(
       orders.id,
