@@ -3,7 +3,7 @@ import { handle } from "hono/vercel";
 import tasks from "./tasks";
 import userProfiles from "./user-profiles";
 import taskComments from "./task-comments";
-
+import orders from "./orders";
 /**
  * API Route Configuration
  */
@@ -19,7 +19,7 @@ const routes = app
   .route("/tasks", tasks)
   .route("/user-profiles", userProfiles)
   .route("/task-comments", taskComments)
-
+  .route("/orders", orders);
 /**
  * HTTP Method Handlers
  * These handlers are used by Vercel to route incoming requests to the Hono app
